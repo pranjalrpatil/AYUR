@@ -18,7 +18,7 @@
                         {% csrf_token %}
 							<div class="row mb-3">
                                   <label for="inputText3" class="col-sm-2 col-form-label">Category</label>
-                                  <select name="title" id="inputText3" class="contact_input trans_200" value = "E.g. Laundry" maxlength = "50" required>
+                                  <select name="title" id="inputText3" class="contact_input trans_200" value = "E.g. Laundry" maxlength = "50" >
                                   <option value="food">Food</option>
                                   <option value="travel">Travel</option>
                                   <option value="clothes">Clothes</option>
@@ -30,7 +30,7 @@
 
                             <div class="row mb-3">
                               <label for="inputDesc3" class="col-sm-2 col-form-label">Currency</label>
-                                        <select name="currency" class="contact_input trans_200" id="inputCurr3" value="E.g. INR" maxlength="50" required>
+                                        <select name="currency" class="contact_input trans_200" id="inputCurr3" value="E.g. INR" maxlength="50">
                                             <option value="rupees">Rupees</option>
                                             <option value="dollar">Dollar</option>
                                             <option value="euros">Euros</option>
@@ -50,10 +50,10 @@
 
                             <div class="row mb-3">
                                 <label for="inputDate4" class="col-sm-2 col-form-label">Date</label>
-                                <input type="date" class="contact_input trans_200" id="birthday" name="date" required>
+                                <input type="date" class="contact_input trans_200" id="birthday" name="date">
                             </div>
 							{% comment %} <div class="input_item"><textarea class="contact_input contact_textarea trans_200" placeholder="Message" required="required"></textarea></div> {% endcomment %}
-							<button type="submit" class="contact_button button">Send<span></span></button>
+							<button type="submit" name="button" id="button" class="contact_button button">Send<span></span></button>
 						</form>
 		</div>
 

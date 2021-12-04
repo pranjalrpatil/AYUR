@@ -1,8 +1,9 @@
+from re import S
 from django.contrib.messages.constants import SUCCESS
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db.models import Sum
-
+from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http.response import HttpResponseRedirect
@@ -29,8 +30,7 @@ def index(request, year_num, month_num):
     this_time = timezone.now()
     this_day, this_month, this_year = this_time.day, this_time.month, this_time.year
 
-    requested_expenses = Expense.objects.filter(payment_time__month=month_num,
-                                                payment_time__year=year_num)
+    requested_expenses = Expense.objects.filter(userid=request.user.id)
 
     paginator = Paginator(requested_expenses, 6)
     page_number = request.GET.get('page')
@@ -38,7 +38,7 @@ def index(request, year_num, month_num):
 
     requested_monthly_expense = sum(
         [expense.amount for expense in requested_expenses])
-
+    print([expense.dateOfPayment for expense in requested_expenses])
     show_add_button = False
 
     # captured_date = datetime(year=year_num,
@@ -49,7 +49,6 @@ def index(request, year_num, month_num):
                              month=month_num,
                              day=1,
                              tzinfo=timezone.utc)
-
 
     if this_time - timedelta(days=this_day) <= captured_date <= this_time:
         show_add_button = True
@@ -63,7 +62,7 @@ def index(request, year_num, month_num):
 
     prev = {'month': prev_exp_month, 'year': prev_exp_year}
 
-    last_monthly_expense = Expense.objects.filter(
+    last_monthly_expense = Expense.objects.filter(userid=request.user.id,
         payment_time__month=prev_exp_month,
         payment_time__year=prev_exp_year).aggregate(
             Sum('amount'))['amount__sum']
@@ -113,11 +112,16 @@ def add_expense(request):
     import requests
 
     if request.method == 'POST':
+        userid=request.user.id
+        print(userid)
         title = request.POST.get('title')
         currency = request.POST.get('currency')
         desc = request.POST.get('desc')
         price = float(request.POST.get('price'))
         date = request.POST.get('date')
+        month=int(date[5:7])
+        year=int(date[0:4])
+        # print(f"laaaaaaaaaaaaaaaaalalala {month}{year}")
 
         if currency == "rupees": pass
 
@@ -132,12 +136,15 @@ def add_expense(request):
 
             price *= int(x.json()['EUR_INR'])
 
-        new_expense = Expense(title=title,
+        new_expense = Expense(userid=userid,
+                              title=title,
                               currency = currency,
                               description=desc,
                               amount=price,
                               payment_time=timezone.now(),
-                              dateOfPayment = date
+                              dateOfPayment = date,
+                              month=month,
+                              year=year
                               )
 
         new_expense.save()
@@ -275,6 +282,30 @@ def monthly_chart(request, year_num, month_num):
         })
 
 
+
+def expmonth(request,month):
+        k=['tp','January','February','March','April','May','June','July','August','September','October','November','December']
+        l=k.index(month)
+        exp=Expense.objects.filter(userid=request.user.id,month=l)
+        paginator = Paginator(exp, 6)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        s=0
+        for expense in page_obj:
+            print(expense)
+            s=s+(expense.amount)
+        data={
+            'page_obj':page_obj,
+            'month':month,
+            'total_exp':s
+        }
+        # print(page_obj)
+        
+        return render(request, 'expenses/monthly.html', context=data)
+
+
+
+
 def delete_expenses_monthly(request, year_num, month_num):
     if request.method == 'POST':
         expenses = get_list_or_404(Expense,
@@ -304,10 +335,20 @@ def delete_expenses_monthly(request, year_num, month_num):
             reverse('expenses:index', args=(year_num, month_num)))
 
 def image(request):
-    # if request.method == "POST":
-    #     print("FF")
-    print("Prnava")
-    return render(request, 'expenses/image.html')
+    months=[]
+    requested_expenses = Expense.objects.filter(userid=request.user.id)
+    for expense in requested_expenses:
+        if(expense.month not in months):
+            months.append(expense.month)
+    k=['tp','January','February','March','April','May','June','July','August','September','October','November','December']
+    m=[]
+
+    for i in months:
+        m.append(k[i])
+    data={
+        'm':m
+    }
+    return render(request, 'expenses/index1.html',context=data)
 
 
 def expense_summary(request):
@@ -320,7 +361,7 @@ def expense_summary(request):
         if filter_by != None:
             if filter_by.lower() == 'weekly':
                 date_search =  today_date - timedelta(days=7) 
-                expenses = Expense.objects.filter(dateOfPayment__gte=date_search)
+                expenses = Expense.objects.filter(userid=request.user.id,dateOfPayment__gte=date_search)
 
                 x = {}
 
@@ -349,7 +390,7 @@ def expense_summary(request):
 
             elif filter_by.lower() == 'daily':
                 date_search =  today_date - timedelta(days=7) 
-                expenses = Expense.objects.filter(dateOfPayment__gte=date_search)
+                expenses = Expense.objects.filter(userid=request.user.id,dateOfPayment__gte=date_search)
 
                 date_dictionary = {}
 
@@ -373,7 +414,7 @@ def expense_summary(request):
 
             elif filter_by.lower() == 'monthly':
                 date_search =  today_date - timedelta(days=31) 
-                expenses = Expense.objects.filter(dateOfPayment__gte=date_search)
+                expenses = Expense.objects.filter(userid=request.user.id,dateOfPayment__gte=date_search)
 
                 x = {}
 
@@ -401,7 +442,7 @@ def expense_summary(request):
 
             elif filter_by.lower() == 'yearly':
                 date_search =  today_date - timedelta(days=365) 
-                expenses = Expense.objects.filter(dateOfPayment__gte=date_search)
+                expenses = Expense.objects.filter(userid=request.user.id,dateOfPayment__gte=date_search)
 
                 x = {}
 
@@ -430,7 +471,7 @@ def expense_summary(request):
 
             elif filter_by.lower() == 'quaterly':
                 date_search =  today_date - timedelta(days=90) 
-                expenses = Expense.objects.filter(dateOfPayment__gte=date_search)
+                expenses = Expense.objects.filter(userid=request.user.id,dateOfPayment__gte=date_search)
 
                 x = {}
 

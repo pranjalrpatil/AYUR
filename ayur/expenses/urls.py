@@ -21,6 +21,7 @@ urlpatterns = [
     path('expense/chart/<int:year_num>/<int:month_num>/',
          views.monthly_chart,
          name='monthly_chart'),
-    path('expense/image/', views.image, name='image'),
+    path('expense/months/', views.image, name='image'),
+    path('expense/months/<str:month>/', views.expmonth, name='month_exp'),
     path('expense/expense_summary/', views.expense_summary, name='expense_summary'),
 ]

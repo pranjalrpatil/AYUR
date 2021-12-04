@@ -1,17 +1,21 @@
+from calendar import month
 import datetime
 from django.db import models
 from django.utils import timezone
-
+from user.models import *
 # Create your models here.
 
 
 class Expense(models.Model):
+    userid=models.IntegerField(null=True)
     title = models.CharField(max_length=100)
     currency = models.CharField(max_length=100, null=True)
     description = models.CharField(max_length=200)
     amount = models.FloatField()
     payment_time = models.DateTimeField(null=True)
-    dateOfPayment = models.CharField(max_length=100, default="None", null=True) 
+    dateOfPayment = models.CharField(max_length=100, default="None", null=True)
+    month=models.IntegerField()
+    year=models.IntegerField()
 
     def __str__(self) -> str:
         return str(self.amount)

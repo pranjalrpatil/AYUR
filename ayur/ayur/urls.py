@@ -22,9 +22,11 @@ from django.urls import path
 from django.urls import path, include
 urlpatterns = [
     path('',views.HomePage,name = "home"),
+    path('about',views.aboutPage,name = "about"),
     path('admin/', admin.site.urls),
-    # path('', include('user.urls')),
-    path('/expenses',include('expenses.urls'))
+    path('user/', include('user.urls')),
+    path('expenses/',include('expenses.urls')),
+    path('hospital/',include('hospital.urls'))
 ]
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT) 

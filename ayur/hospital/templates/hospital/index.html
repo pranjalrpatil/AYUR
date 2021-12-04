@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'styles/style1.css'%}">
+    <script src="https://kit.fontawesome.com/c939d0e917.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .mapboxgl-popup {
+            max-width: 480px !important;
+        }
+
+        .mapboxgl-popup-content {
+            font-size: medium;
+            font-family: 'Roboto';
+        }
+
+        .marker {
+            background-image: url("{% static 'images/marker.svg' %}") ;
+            background-size: 50px 50px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .mapboxgl-popup-close-button{
+            display: none;
+        }
+
+    </style>        
+</head>
+
+<body>
+    <!-- <div class="title">
+        <h2>NEARBY HOSPITAL LOCATOR</h2>
+   </div> -->
+    <div class="main-search-box">
+        <div class="search-container"  >
+            <div class="search">
+                <input id="zip-code-input" type="text" placeholder="enter location"></input>
+                <i class="fas fa-search" style="cursor: pointer" onclick="searchHospitals()"></i>
+            </div> 
+        </div>
+        <div class="hospitals-list-container">
+            <div class="hospitals-list">
+            
+            </div>
+        </div>
+    </div>
+    <div id='map'></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js" integrity="sha512-u9akINsQsAkG9xjc1cnGF4zw5TFDwkxuc9vUp5dltDWYCSmyd0meygbvgXrlc/z7/o4a19Fb5V0OUE58J7dcyw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
+    <script>
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamFpam9zaGkiLCJhIjoiY2tqNW03eHEyMDU2NzJ1bXQ1dXA4dzQydSJ9.DVT4T1SbwdPDaWHiRaNqoQ';
+    const SEARCH_PLACES_URL= "https://api.opentripmap.com/0.1/en/places/"
+    const SEARCH_PLACES_API_KEY='5ae2e3f221c38a28845f05b67b9557fab658237fd5336cdcfe3a973b'
+    new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/streets-v11', // style URL
+        center: [ 71.825859,22.366811], // starting position [lng, lat]
+        zoom: 3.5 // starting zoom
+    });
+
+    const getPlaces = async(loc)=>{
+        const params = {
+            'apikey':'tuo6JgL1XwUOMT6mCmk3yiBckTn-8NZOoJRVN1S5CUo',
+            'q':'hospital',
+            'limit': 10,
+            'at':loc.lat+','+loc.lon,
+        };
+        const res = await axios.get('https://discover.search.hereapi.com/v1/discover', { params });
+        console.log(res.data.items)
+        return res.data.items
+    }
+    
+    const addPlaces = (places)=>{
+        console.log("Add places")
+        var hospitalsList = ""
+        for(let i=0;i<places.length;i++){
+            const el = document.createElement('div');
+            el.className = 'marker';
+            const marker = new mapboxgl.Marker(el)
+                .setLngLat([places[i].position.lng,places[i].position.lat])
+                .setPopup(
+                    new mapboxgl.Popup({ offset: 25 }) // add popups
+                    .setHTML(
+                        `
+                            <div class="hospital-info-window">
+                                <div class="hospital-info-name">
+                                    ${places[i].title} &nbsp ${5}<span class="fa fa-star checked fa-xs"></span>
+                                </div>
+                                <div class="hospital-info-status">
+                                    Open 24 Hours
+                                </div>
+                                <div id="hospital-address-id" class="hospital-info-address">
+                                    <div class="circle">
+                                        <i class="fas fa-location-arrow"></i>
+                                    </div>
+                                    ${places[i].address.label.slice(0,51)+".."}
+                                </div>
+                                <div class="hospital-info-phone">
+                                    <div class="circle">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    ${places[i].contacts?places[i].contacts[0].phone[0].value:"No Contacts available"}
+                                </div>
+                                <div class="hospital-info-beds">
+                                    <div class="circle">
+                                        <i class="fas fa-procedures"></i>
+                                    </div>
+                                    ${Math.floor(Math.random() * 500 + 300)}
+                                </div>
+                            </div>
+                        `
+                    )
+                )
+                .addTo(map);
+                el.addEventListener("mouseover",()=>{
+                    marker.togglePopup()
+                }
+                )
+                el.addEventListener("mouseout",()=>{
+                    marker.togglePopup()
+                }
+                )
+
+                hospitalsList+= `
+                            <div class="hospital-container">
+                                <div class="hospital-container-background">
+                                    <div class="hospital-info-container"> 
+                                        <div class="hospital-address">
+                                            <span>${places[i].address.label}</span> 
+                                        </div>
+                                        <div class="hospital-phone-number">Pincode: ${places[i].address.postalCode}</div>
+                                    </div>
+                                    <div class="hospital-number-container">
+                                        <div class="hospital-number">${i+1}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            `
+                
+        }   
+        document.querySelector('.hospitals-list').innerHTML = hospitalsList;
+    }
+
+    const placeInfoSearch = async(API_KEY,place)=>{
+        const places_info_api_config = {
+            params: {
+                apikey: API_KEY,
+                lang: 'en',
+                name: place
+            }
+        };
+        var {data} = await axios.get(SEARCH_PLACES_URL+"geoname",places_info_api_config)
+        console.log(data)
+        return data
+    }
+
+    const runFunction = async(place)=>{
+        const loc = await placeInfoSearch(SEARCH_PLACES_API_KEY,place)
+        map = new mapboxgl.Map({
+            container: 'map', // container ID
+            style: 'mapbox://styles/mapbox/streets-v11', // style URL
+            center: [loc.lon,loc.lat], // starting position [lng, lat]
+            zoom: 14 // starting zoom
+        });
+        const places = await getPlaces(loc);
+        addPlaces(places);
+    }
+
+    function searchHospitals(){
+        var place = document.getElementById('zip-code-input').value;
+        runFunction(place);
+    }
+    
+    </script>        
+</body>
+</html>

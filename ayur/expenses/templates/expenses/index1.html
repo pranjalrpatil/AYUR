@@ -1,0 +1,106 @@
+{% extends "expenses/base.html" %}
+
+{% load static %}
+
+{% load humanize %}
+
+{% block content %}
+<!-- Home -->
+
+	<div class="home">
+    <div class="background_image" style="background-image: url({% static 'expenses/ex.jpg' %}); filter: brightness(50%)"></div>
+		{% comment %} <div class="background_image" style="background: url({% static 'expenses/contact.jpg' %})"></div> {% endcomment %}
+		<div class="overlay"></div>
+		<div class="home_container">
+			<div class="container">
+				<div class="row">
+					<div class="col">
+						<div class="home_content">
+							<div class="home_title">📚 Expense Diary</div>
+							<div class="home_subtitle">Keep a track of all your expenses!</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    
+    {% comment %}  style="margin-top:200px;" {% endcomment %}
+    <div class="container mother-container">
+    <h3> Choose a month:</h3>
+    {% comment %} <h1 style="margin-top:100px;">
+        <span class="badge bg-dark apptitle">📚 Expense Diary</span>
+    </h1> {% endcomment %}
+
+<hr
+        class="mt-5">
+
+        <!-- change expenses:page_obj -->
+        {% comment %} {% if not page_obj %}
+            <h1 class="shrugged text-center mt-5">¯\_(ツ)_/¯</h1>
+            <h5 class="mt-4 text-center shrugged-caption">No expenses were found</h5>
+
+        {% else %} {% endcomment %}
+
+{% comment %} <h5 class="card-title ctitle" id="cardid">{{ m.1}}</h5> {% endcomment %}
+          
+            <div
+                class="row row-cols-3 row-cols-sm-3 g-4 mt-3">
+                <!-- change expenses:page_obj -->
+                {% for month in m %}
+                    <div class="col">
+                        <div class="card text-dark bg-transparent mx-auto mb-3" style="max-width: 22rem;">
+
+                            <div class="card-header amount">
+                                Expenses for month :
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title ctitle" id="cardid">{{ month}}</h5>
+                                {% comment %} <p class="card-text">{{ expense.description|truncatechars:25 }}</p> {% endcomment %}
+                                <a href="{% url 'expenses:month_exp' month%}" class="btn btn-outline-primary btn-sm">View Details</a>
+
+                                {% comment %} <!-- Form for deleting an expense item -->
+                                <form class="float-end" action="{% url 'expenses:delete_expense' expense.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger btn-sm float-end" type="submit" data-bs-toggle="tooltip" data-bs-placement="right" title="Delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z"/>
+                                        </svg>
+                                    </button>
+                                </form> {% endcomment %}
+
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% comment %} {% endif %} {% endcomment %}
+        {% comment %} <!-- Vertically centered modal -->
+        <div class="modal fade" id="deleteAllModal" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Delete all expenses of current month</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        This action is irreversible and will delete all the expenses that you added this month
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{% url 'expenses:delete_monthly' captured_date.year captured_date.month %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit" name="delete_all" value="confirmed">
+                                Yes, I wish to Proceed
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> {% endcomment %}
+
+
+    {% endblock %}
+</div>

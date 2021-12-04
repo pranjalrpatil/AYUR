@@ -62,11 +62,11 @@
 						</a>
 						<nav class="main_nav">
 							<ul class="d-flex flex-row align-items-center justify-content-start">
-								<li class="active"><a href="index.html">Home</a></li>
+                                <li class="active"><a href="{% url 'expenses:home'%}">Expense Tracker</a></li>
+								<li ><a href="{% url 'home'%}">Home</a></li>
 								<li><a href="about.html">About us</a></li>
-								<li><a href="services.html">Classes & Services</a></li>
 								<li><a href="blog.html">Blog</a></li>
-								<li><a href="contact.html">Contact</a></li>
+								{% comment %} <li><a href="contact.html">Contact</a></li> {% endcomment %}
 							</ul>
 						</nav>
 						<div class="phone d-flex flex-row align-items-center justify-content-start ml-auto">
